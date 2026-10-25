@@ -145,3 +145,75 @@ test('malformed AI JSON is handled safely', function () {
 
     expect(Task::count())->toBe(0);
 });
+
+test('a null AI description receives a fallback', function () {
+    $user = User::factory()->create();
+
+    fakeOllamaProposal([
+        'title' => 'Finish portfolio website',
+        'description' => null,
+    ]);
+
+    $response = $this->actingAs($user)->postJson(
+        route('dashboard.ai.task-proposals.store'),
+        ['prompt' => 'Help me finish my portfolio']
+    );
+
+    $response->assertOk()
+        ->assertJsonPath('proposal.title', 'Finish portfolio website')
+        ->assertJsonPath(
+            'proposal.description',
+            'Work on Finish portfolio website. Break the task into manageable steps, '
+                . 'complete the necessary work, and review the result to confirm '
+                . 'that the goal has been achieved.'
+        );
+
+    expect(Task::count())->toBe(0);
+});
+
+test('an empty AI description receives a fallback', function () {
+    $user = User::factory()->create();
+
+    fakeOllamaProposal([
+        'title' => 'Learn Laravel',
+        'description' => '',
+    ]);
+
+    $response = $this->actingAs($user)->postJson(
+        route('dashboard.ai.task-proposals.store'),
+        ['prompt' => 'Help me learn Laravel']
+    );
+
+    $response->assertOk()
+        ->assertJsonPath(
+            'proposal.description',
+            'Work on Learn Laravel. Break the task into manageable steps, '
+                . 'complete the necessary work, and review the result to confirm '
+                . 'that the goal has been achieved.'
+        );
+
+    expect(Task::count())->toBe(0);
+});
+
+test('a missing AI description receives a fallback', function () {
+    $user = User::factory()->create();
+
+    fakeOllamaProposal([
+        'title' => 'Build a REST API',
+    ]);
+
+    $response = $this->actingAs($user)->postJson(
+        route('dashboard.ai.task-proposals.store'),
+        ['prompt' => 'Help me build a REST API']
+    );
+
+    $response->assertOk()
+        ->assertJsonPath(
+            'proposal.description',
+            'Work on Build a REST API. Break the task into manageable steps, '
+                . 'complete the necessary work, and review the result to confirm '
+                . 'that the goal has been achieved.'
+        );
+
+    expect(Task::count())->toBe(0);
+});
