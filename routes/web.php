@@ -27,6 +27,12 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard.tasks.index');
     Route::post('/dashboard/tasks', [TaskController::class, 'store'])
         ->name('dashboard.tasks.store');
+    Route::put('/dashboard/tasks/{task}', [TaskController::class, 'update'])
+        ->whereNumber('task')
+        ->name('dashboard.tasks.update');
+    Route::delete('/dashboard/tasks/{task}', [TaskController::class, 'destroy'])
+        ->whereNumber('task')
+        ->name('dashboard.tasks.destroy');
     Route::get('/dashboard/tasks/stats', [TaskController::class, 'stats'])
         ->name('dashboard.tasks.stats');
 
