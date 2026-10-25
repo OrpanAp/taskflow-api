@@ -1,4 +1,17 @@
-FROM php:8.4-cli-bookworm
+# Stage 1: Build the frontend assets with Vite
+FROM node:22-bookworm-slim AS frontend
+
+WORKDIR /var/www/html
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+
+# Stage 2: Build the Laravel PHP application
+FROM php:8.4-cli-bookworm AS app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -19,6 +32,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY . .
+
+# Include the compiled Vite assets in the final PHP image
+COPY --from=frontend /var/www/html/public/build ./public/build
 
 RUN composer install \
     --no-interaction \
