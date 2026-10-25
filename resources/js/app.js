@@ -28,6 +28,233 @@ sidebar?.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeSidebar);
 });
 
+const aiProposalForm = document.querySelector("#aiProposalForm");
+
+if (aiProposalForm) {
+    const aiPrompt = document.querySelector("#aiPrompt");
+    const aiError = document.querySelector("#aiProposalError");
+    const aiSuccess = document.querySelector("#aiProposalSuccess");
+    const aiReview = document.querySelector("#aiProposalReview");
+    const aiTitle = document.querySelector("#aiProposalTitle");
+    const aiDescription = document.querySelector("#aiProposalDescription");
+    const generateButton = document.querySelector("#generateProposalButton");
+    const approveButton = document.querySelector("#approveProposalButton");
+    const discardButton = document.querySelector("#discardProposalButton");
+
+    function showAiError(message) {
+        aiSuccess.classList.add("hidden");
+        aiSuccess.textContent = "";
+        aiError.textContent = message;
+        aiError.classList.remove("hidden");
+    }
+
+    function clearAiError() {
+        aiError.textContent = "";
+        aiError.classList.add("hidden");
+    }
+
+    function showAiSuccess(message) {
+        clearAiError();
+        aiSuccess.textContent = message;
+        aiSuccess.classList.remove("hidden");
+    }
+
+    function clearAiSuccess() {
+        aiSuccess.textContent = "";
+        aiSuccess.classList.add("hidden");
+    }
+
+    function setButtonBusy(button, busy, busyText, normalText) {
+        button.disabled = busy;
+        button.textContent = busy ? busyText : normalText;
+        button.classList.toggle("cursor-not-allowed", busy);
+        button.classList.toggle("opacity-60", busy);
+    }
+
+    function resetAiProposal() {
+        aiReview.classList.add("hidden");
+        aiTitle.value = "";
+        aiDescription.value = "";
+        clearAiError();
+        clearAiSuccess();
+    }
+
+    async function postJson(url, payload) {
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
+
+        if (!csrfToken) {
+            throw new Error(
+                "The security token is missing. Refresh the page and try again.",
+            );
+        }
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 419) {
+                throw new Error(
+                    "Your session may have expired. Refresh the page and sign in again.",
+                );
+            }
+
+            if (response.status === 422 && result.errors) {
+                const firstError = Object.values(result.errors)
+                    .flat()
+                    .find(Boolean);
+
+                throw new Error(firstError || "Please check your input.");
+            }
+
+            throw new Error(
+                result.message || "The request failed. Please try again.",
+            );
+        }
+
+        return result;
+    }
+
+    aiProposalForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearAiError();
+        clearAiSuccess();
+        aiReview.classList.add("hidden");
+
+        const prompt = aiPrompt.value.trim();
+
+        if (prompt.length < 3 || prompt.length > 2000) {
+            showAiError(
+                "Please enter a request between 3 and 2000 characters.",
+            );
+            aiPrompt.focus();
+            return;
+        }
+
+        setButtonBusy(
+            generateButton,
+            true,
+            "Generating proposal...",
+            "Generate proposal",
+        );
+
+        try {
+            const result = await postJson("/dashboard/ai/task-proposals", {
+                prompt,
+            });
+
+            if (
+                !result.proposal ||
+                typeof result.proposal.title !== "string" ||
+                !result.proposal.title.trim()
+            ) {
+                throw new Error("The AI returned an invalid task proposal.");
+            }
+
+            aiTitle.value = result.proposal.title;
+            aiDescription.value = result.proposal.description ?? "";
+            aiReview.classList.remove("hidden");
+        } catch (exception) {
+            showAiError(
+                exception instanceof Error
+                    ? exception.message
+                    : "Unable to generate a proposal. Please try again.",
+            );
+        } finally {
+            setButtonBusy(
+                generateButton,
+                false,
+                "Generating proposal...",
+                "Generate proposal",
+            );
+        }
+    });
+
+    approveButton.addEventListener("click", async () => {
+        clearAiError();
+        clearAiSuccess();
+
+        const title = aiTitle.value.trim();
+        const description = aiDescription.value.trim();
+
+        if (!title || title.length > 200) {
+            showAiError("Enter a task title of 1–200 characters.");
+            aiTitle.focus();
+            return;
+        }
+
+        if (description.length > 10000) {
+            showAiError("The description cannot exceed 10000 characters.");
+            aiDescription.focus();
+            return;
+        }
+
+        setButtonBusy(
+            approveButton,
+            true,
+            "Creating task...",
+            "Approve and create task",
+        );
+
+        try {
+            await postJson("/dashboard/tasks", {
+                title,
+                description: description || null,
+                status: "pending",
+            });
+
+            // Refresh the dashboard so the new task is visible.
+            const searchInput = document.querySelector("#taskSearch");
+            const statusFilter = document.querySelector("#statusFilter");
+
+            if (searchInput) searchInput.value = "";
+            if (statusFilter) statusFilter.value = "all";
+
+            resetAiProposal();
+            aiPrompt.value = "";
+
+            if (refreshDashboardAfterAiSave) {
+                const refreshResults = await refreshDashboardAfterAiSave();
+
+                if (refreshResults.some((item) => item.status === "rejected")) {
+                    console.error(
+                        "One or more dashboard sections failed to refresh.",
+                    );
+                }
+            }
+
+            showAiSuccess("Task created successfully.");
+        } catch (exception) {
+            showAiError(
+                exception instanceof Error
+                    ? exception.message
+                    : "Unable to create the task. Please try again.",
+            );
+        } finally {
+            setButtonBusy(
+                approveButton,
+                false,
+                "Creating task...",
+                "Approve and create task",
+            );
+        }
+    });
+
+    discardButton.addEventListener("click", resetAiProposal);
+}
+
+let refreshDashboardAfterAiSave = null;
 const taskList = document.querySelector("#taskList");
 
 if (taskList) {
@@ -180,6 +407,9 @@ if (taskList) {
             error.classList.remove("hidden");
         }
     }
+
+    refreshDashboardAfterAiSave = () =>
+        Promise.allSettled([loadTasks(), loadStats()]);
 
     // Submit a new task to Laravel.
     taskForm?.addEventListener("submit", async (event) => {

@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'ollama' => [
+        'base_url' => env(
+            'OLLAMA_BASE_URL',
+            'http://host.docker.internal:11434'
+        ),
+        'model' => env('OLLAMA_MODEL', 'llama3.2:latest'),
+        'timeout' => (int) env('OLLAMA_TIMEOUT', 60),
+    ],
 ];

@@ -151,6 +151,82 @@
                     </article>
                 </section>
 
+                <section id="aiAssistant" class="rounded-2xl border border-violet-200 bg-white shadow-sm">
+                    <div class="border-b border-violet-100 bg-violet-50/60 p-5 sm:p-6">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-violet-600">
+                            Local AI · Ollama
+                        </p>
+                        <h3 class="mt-2 text-lg font-bold text-slate-900">AI task assistant</h3>
+                        <p class="mt-1 text-sm leading-6 text-slate-600">
+                            Describe what you need to accomplish. Review and edit the suggestion before approving it.
+                        </p>
+                    </div>
+
+                    <div class="space-y-5 p-5 sm:p-6">
+                        <form id="aiProposalForm" class="space-y-3">
+                            <label for="aiPrompt" class="block text-sm font-semibold text-slate-700">
+                                What do you need help planning?
+                            </label>
+                            <textarea id="aiPrompt" rows="3" minlength="3" maxlength="2000" required
+                                placeholder="Example: Finish my Laravel API authentication tests and document the endpoints."
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50"></textarea>
+
+                            <div id="aiProposalError" role="alert"
+                                class="hidden rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+                            </div>
+
+                            <div id="aiProposalSuccess" role="status" aria-live="polite"
+                                class="hidden rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700">
+                            </div>
+
+                            <button id="generateProposalButton" type="submit"
+                                class="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 focus:outline-none focus:ring-4 focus:ring-violet-100">
+                                Generate proposal
+                            </button>
+                        </form>
+
+                        <div id="aiProposalReview"
+                            class="hidden space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                            <div>
+                                <h4 class="font-semibold text-slate-900">Review your proposal</h4>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    Nothing will be saved until you approve it.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label for="aiProposalTitle" class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Task title
+                                </label>
+                                <input id="aiProposalTitle" type="text" maxlength="200" required
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50">
+                            </div>
+
+                            <div>
+                                <label for="aiProposalDescription"
+                                    class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Description
+                                </label>
+                                <textarea id="aiProposalDescription" rows="4" maxlength="10000"
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50"></textarea>
+                            </div>
+
+                            <p class="text-xs text-slate-500">Status: Pending</p>
+
+                            <div class="flex flex-wrap gap-3">
+                                <button id="approveProposalButton" type="button"
+                                    class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                                    Approve and create task
+                                </button>
+                                <button id="discardProposalButton" type="button"
+                                    class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">
+                                    Discard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="tasks" class="rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div
                         class="flex flex-col justify-between gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:p-6">
@@ -159,7 +235,8 @@
                             <p class="mt-1 text-sm text-slate-500">Manage your tasks, track progress, and stay
                                 organized.</p>
                         </div>
-                        <button id="newTaskButton" type="button" aria-controls="taskFormPanel" aria-expanded="false"
+                        <button id="newTaskButton" type="button" aria-controls="taskFormPanel"
+                            aria-expanded="false"
                             class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100">
                             + New task
                         </button>

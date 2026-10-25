@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\TaskController;
+use App\Http\Controllers\Web\AiTaskProposalController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])
@@ -28,6 +29,13 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard.tasks.store');
     Route::get('/dashboard/tasks/stats', [TaskController::class, 'stats'])
         ->name('dashboard.tasks.stats');
+
+    Route::post(
+        '/dashboard/ai/task-proposals',
+        [AiTaskProposalController::class, 'store']
+    )
+        ->middleware('throttle:10,1')
+        ->name('dashboard.ai.task-proposals.store');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');

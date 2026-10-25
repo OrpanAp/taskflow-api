@@ -16,6 +16,9 @@ services:
       DB_DATABASE: taskflow
       DB_USERNAME: taskflow
       DB_PASSWORD: taskflow_local_password
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2:latest
+      OLLAMA_TIMEOUT: "60"
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:

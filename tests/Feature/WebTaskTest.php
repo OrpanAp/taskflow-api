@@ -88,8 +88,6 @@ test('task creation uses the authenticated user as owner', function () {
     ]);
 });
 
-
-
 test('a visitor can view the registration form', function () {
     $this->get(route('register'))
         ->assertOk()
