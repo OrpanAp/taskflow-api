@@ -1,265 +1,410 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=240&color=0:0B1020,35:1E3A8A,70:4F46E5,100:22D3EE&text=TASKFLOW%20AI&fontColor=FFFFFF&fontSize=56&fontAlignY=38&desc=TASK%20MANAGEMENT%20API%20%7C%20LARAVEL%20%7C%20SANCTUM&descSize=15&descAlignY=59&animation=fadeIn" width="100%" alt="TaskFlow AI — Task Management API banner" />
+<img src="https://capsule-render.vercel.app/api?type=waving&height=240&color=0:0B1020,35:1E3A8A,70:4F46E5,100:22D3EE&text=TASKFLOW%20AI&fontColor=FFFFFF&fontSize=56&fontAlignY=38&desc=AI-ASSISTED%20TASK%20MANAGEMENT%20%7C%20LARAVEL%20%7C%20OLLAMA&descSize=15&descAlignY=59&animation=fadeIn" width="100%" alt="TaskFlow AI — AI-assisted task management" />
 
-### A secure, test-driven API for managing tasks.
+### Plan clearly. Review AI suggestions. Stay in control.
 
-A Laravel-powered task management backend with token authentication, per-user task isolation, filtering, search, sorting, and pagination — built with maintainability and API clarity in mind.
+**TaskFlow AI** is a Laravel application that combines a browser-based task dashboard and a JSON API with locally hosted AI task proposals. Generate a draft from a prompt, review it, and decide whether to save it—AI suggestions are not persisted until you approve them.
 
 <p>
   <img src="https://img.shields.io/badge/Laravel-13-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 13" />
-  <img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.3+" />
-  <img src="https://img.shields.io/badge/Auth-Laravel%20Sanctum-4F46E5?style=for-the-badge" alt="Laravel Sanctum authentication" />
+  <img src="https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.4" />
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL 17" />
+  <img src="https://img.shields.io/badge/AI-Ollama-111827?style=for-the-badge" alt="Ollama local AI" />
   <img src="https://img.shields.io/badge/Tests-Pest-16A34A?style=for-the-badge" alt="Pest tests" />
-  <img src="https://img.shields.io/badge/Environment-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose" />
 </p>
 
 <p>
-  <a href="https://github.com/OrpanAp/taskflow-api"><img src="https://img.shields.io/badge/Repository-View%20source-111827?style=flat-square&logo=github&logoColor=white" alt="View source code" /></a>
+  <a href="https://github.com/OrpanAp/taskflow-api"><img src="https://img.shields.io/badge/Repository-Source%20Code-111827?style=flat-square&logo=github&logoColor=white" alt="Source code" /></a>
   <a href="https://laravel.com/docs"><img src="https://img.shields.io/badge/Docs-Laravel-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel documentation" /></a>
+  <a href="https://ollama.com/"><img src="https://img.shields.io/badge/Local%20AI-Ollama-111827?style=flat-square" alt="Ollama" /></a>
 </p>
 
 </div>
 
 ---
 
+## Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Technology stack](#technology-stack)
+- [Run locally with Docker](#run-locally-with-docker)
+- [Configure local AI with Ollama](#configure-local-ai-with-ollama)
+- [Use the dashboard](#use-the-dashboard)
+- [API reference](#api-reference)
+- [Run the tests](#run-the-tests)
+- [Security and reliability](#security-and-reliability)
+- [Project structure](#project-structure)
+- [Roadmap](#roadmap)
+- [About the developer](#about-the-developer)
+
 ## Overview
 
-**TaskFlow AI** is a task-management API built with Laravel. It gives authenticated users a consistent way to create and manage their own tasks, while keeping each user's records isolated from everyone else's.
+TaskFlow AI demonstrates practical full-stack and backend engineering through a task-management workflow with clear ownership boundaries, validation, automated tests, and a local AI integration.
 
-The project emphasizes practical backend engineering: clear route organization, request validation, token-based authentication, query controls for growing task lists, and automated feature tests.
+The application has two interfaces:
+
+- **Browser dashboard:** register or sign in, view task statistics, manage your tasks, and generate AI task proposals.
+- **JSON API:** authenticate with Laravel Sanctum tokens and manage tasks using standard HTTP endpoints.
+
+The AI integration uses an Ollama model running locally on the host machine by default. The model suggests a title and description; the user remains in control of saving the task.
 
 ## Features
 
-- **Token authentication** — register and log in with Laravel Sanctum; revoke the current token when logging out.
-- **Protected task management** — create, list, update, and delete tasks through authenticated endpoints.
-- **User-level data isolation** — task queries are scoped to the authenticated user.
-- **Search** — search task titles and descriptions with case-insensitive partial matching.
-- **Status filtering** — narrow task lists by task status.
-- **Sorting** — choose supported ordering for task results.
-- **Pagination** — return task collections in manageable pages with pagination metadata.
-- **Validation and rate limiting** — validate incoming data and throttle registration/login attempts.
-- **Automated tests** — feature tests cover authentication, task ownership, validation, search, filtering, sorting, and pagination.
-- **Docker-based development** — run the application in a consistent container environment.
+### Task management
+
+- Create, list, update, and delete your own tasks through the API.
+- Create and list tasks through the authenticated browser dashboard.
+- Search titles and descriptions using case-insensitive partial matching.
+- Filter by task status, sort results, and paginate large task lists.
+- View task statistics in the dashboard.
+- Validate requests and reject invalid query options.
+
+### AI task proposals
+
+- Describe a task in natural language and request a draft from Ollama.
+- Receive a structured title and description for review.
+- Approve a proposal to save it as a task, or discard it without saving.
+- Validate AI output and provide a fallback description when the model's description is missing, null, or empty.
+- Handle unavailable providers and unusable AI responses with controlled errors.
+- Rate-limit the AI proposal endpoint.
+
+### Authentication and access control
+
+- Register, log in, and log out in the browser.
+- Register and log in through the API using Laravel Sanctum personal access tokens.
+- Protect private routes with authentication middleware.
+- Scope task queries to the authenticated user and enforce task ownership.
+- Apply request validation and rate limiting to sensitive entry points.
+
+## Architecture
+
+    flowchart TD
+        U[User] --> W[Laravel browser dashboard]
+        U --> C[Client / API consumer]
+        W --> L[Laravel application]
+        C --> A[Laravel JSON API]
+        L --> DB[(PostgreSQL 17)]
+        A --> DB
+        L --> AI[AI task proposal service]
+        AI --> O[Ollama on host]
+        O --> AI
+        AI --> L
+        L --> W
+
+- **Laravel** handles routing, authentication, validation, task logic, and HTTP responses.
+- **PostgreSQL** persists application data in the Docker Compose environment.
+- **Laravel Sanctum** issues personal access tokens for API authentication.
+- **Ollama** runs the configured language model on the host; the application sends proposal requests to its HTTP API.
+- **Pest** tests application behavior, including authentication, ownership, query parameters, and AI failure/fallback cases.
 
 ## Technology stack
 
-| Area | Technologies |
+| Area | Technology |
 |---|---|
-| Backend | PHP, Laravel 13 |
-| Authentication | Laravel Sanctum personal access tokens |
-| Data access | Eloquent ORM |
-| Testing | Pest, Laravel feature testing |
-| Runtime | Docker / Docker Compose |
-| API format | JSON over HTTP |
+| Backend framework | Laravel 13 |
+| Runtime | PHP 8.4 Docker image |
+| Database | PostgreSQL 17 |
+| API authentication | Laravel Sanctum |
+| ORM | Eloquent |
+| Browser UI | Blade, JavaScript, Tailwind CSS / Vite |
+| Local AI | Ollama; default model llama3.2:latest |
+| Automated tests | Pest |
+| Local environment | Docker Compose |
 
-## Getting started
+## Run locally with Docker
 
 ### Prerequisites
 
 - Git
-- Docker Desktop or Docker Engine with the Docker Compose plugin
+- Docker Desktop on Windows/macOS, or Docker Engine with the Compose plugin on Linux
+- Ollama is optional for the main application, but required for live AI proposal generation
 
 ### 1. Clone the repository
 
-```bash
-git clone https://github.com/OrpanAp/taskflow-api.git
-cd taskflow-api
-```
+    git clone https://github.com/OrpanAp/taskflow-api.git
+    cd taskflow-api
 
-### 2. Configure environment
+### 2. Create your local environment file
 
-Create your local environment file from the example:
+    cp .env.example .env
 
-```bash
-cp .env.example .env
-```
+On PowerShell, use:
 
-Review the environment variables and make sure the database settings match the services configured for your Docker Compose environment.
+    Copy-Item .env.example .env
 
-### 3. Build and start the application
+The Compose configuration supplies the PostgreSQL connection settings and Ollama defaults to the app container. Keep your local .env file private; never commit real credentials or application secrets.
 
-```bash
-docker compose up -d --build app
-```
+### 3. Build and start the services
 
-If you change application source files, rebuild the app image so the container uses the latest code:
+    docker compose up -d --build app
+    docker compose ps
 
-```bash
-docker compose up -d --build app
-```
+Compose starts the Laravel app and PostgreSQL service. The app is published on 127.0.0.1:8000, and PostgreSQL is published on 127.0.0.1:5432 for local development.
 
-### 4. Prepare Laravel
+### 4. Generate and persist the application key
 
-Run the following commands inside the application container:
+The Compose file passes values from the host .env file into the container; it does not bind-mount that file for editing. Generate a key and copy it into the host .env file so it survives container rebuilds.
 
-```bash
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate
-```
+Run:
 
-If your environment already has an application key, do not replace it unnecessarily. If migrations need a different deployment-specific flag, use the appropriate setting for that environment.
+    docker compose exec app php artisan key:generate --show
 
-### 5. Check the API
+Copy the displayed base64:... value into the host .env file as the value of APP_KEY, for example:
 
-With the application running locally, open:
+    APP_KEY=base64:PASTE_THE_GENERATED_VALUE_HERE
 
-```text
-http://127.0.0.1:8000/api/health
-```
+Do not use the example placeholder literally. Keep the same key for an existing local environment; changing it can invalidate encrypted data and sessions.
 
-Expected response:
+### 5. Run database migrations
 
-```json
-{
-  "status": "ok",
-  "application": "TaskFlow AI"
-}
-```
+    docker compose exec app php artisan migrate
+
+### 6. Open the application
+
+- Dashboard: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- Registration: [http://127.0.0.1:8000/register](http://127.0.0.1:8000/register)
+- Login: [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login)
+- API health check: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
+
+The dashboard requires authentication. Register an account or sign in to use it.
+
+### Rebuild after changing application code
+
+Application source is copied into the Docker image rather than bind-mounted. Rebuild the app image after changing PHP or frontend source files:
+
+    docker compose up -d --build app
+
+## Configure local AI with Ollama
+
+TaskFlow's default Compose configuration expects Ollama to run on the **host machine**, reachable from the app container at http://host.docker.internal:11434.
+
+1. Install and start Ollama from [ollama.com](https://ollama.com/).
+2. Download the default model on the host:
+
+       ollama pull llama3.2:latest
+
+3. Confirm the model is available:
+
+       ollama list
+
+4. Start or rebuild TaskFlow, then open the authenticated dashboard and try the AI task proposal form.
+
+The default settings in compose.yaml are:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| OLLAMA_BASE_URL | http://host.docker.internal:11434 | Ollama base URL as seen from the container |
+| OLLAMA_MODEL | llama3.2:latest | Model used to create proposals |
+| OLLAMA_TIMEOUT | 60 | Request timeout in seconds |
+
+If you change these values in compose.yaml, recreate the app container to apply them. Make sure the selected model has been pulled and that the Ollama service is reachable from Docker. AI generation may take time depending on your hardware and model.
+
+**Privacy note:** prompts are sent to the Ollama service configured for your environment. With the default setup, the model runs locally on your host; this is not a guarantee that every custom Ollama endpoint is local.
+
+## Use the dashboard
+
+1. Register or sign in.
+2. Review the dashboard and task statistics.
+3. Create and manage tasks using the task interface.
+4. Enter a natural-language request into the AI proposal form.
+5. Review the proposed title and description.
+6. Approve the proposal to save it, or discard it to leave the task list unchanged.
+
+The proposal endpoint only generates a draft. The task is saved through the task-creation workflow after you approve it.
 
 ## API reference
 
-Base URL for local development: `http://127.0.0.1:8000/api`
+Local API base URL:
+
+    http://127.0.0.1:8000/api
 
 ### Public endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/health` | Check API health |
-| `POST` | `/register` | Create an account and receive a token |
-| `POST` | `/login` | Authenticate and receive a token |
+| GET | /health | Check API health |
+| POST | /register | Create an account and receive a token |
+| POST | /login | Authenticate and receive a token |
 
 Registration and login are rate-limited.
 
 ### Authenticated endpoints
 
-Send the token returned by registration or login in the request header:
+Send the access token returned by registration or login in the Authorization header:
 
-```http
-Authorization: Bearer YOUR_ACCESS_TOKEN
-Accept: application/json
-```
+    Authorization: Bearer YOUR_ACCESS_TOKEN
+    Accept: application/json
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `POST` | `/logout` | Revoke the current access token |
-| `GET` | `/user` | Get the authenticated user's information |
-| `GET` | `/tasks` | List the authenticated user's tasks |
-| `POST` | `/tasks` | Create a task |
-| `PUT` | `/tasks/{task}` | Update a task |
-| `DELETE` | `/tasks/{task}` | Delete a task |
+| POST | /logout | Revoke the current access token |
+| GET | /user | Get the authenticated user's safe profile |
+| GET | /tasks | List the authenticated user's tasks |
+| POST | /tasks | Create a task |
+| PUT | /tasks/{task} | Update an owned task |
+| DELETE | /tasks/{task} | Delete an owned task |
 
-All task endpoints require authentication. Users can access only tasks belonging to their own account.
+All task endpoints require authentication. A user cannot access another user's tasks.
 
-### Example: register
+### Register an account
 
-```http
-POST /api/register
-Content-Type: application/json
-Accept: application/json
-```
+    POST /api/register
+    Content-Type: application/json
+    Accept: application/json
 
-```json
-{
-  "name": "Alex Developer",
-  "email": "alex@example.com",
-  "password": "SecurePass123!",
-  "password_confirmation": "SecurePass123!"
-}
-```
+Request body:
 
-A successful registration returns a user representation and an access token. Keep the token private.
+    {
+      "name": "Alex Developer",
+      "email": "alex@example.com",
+      "password": "UseAUniquePassword123!",
+      "password_confirmation": "UseAUniquePassword123!"
+    }
 
-### Example: create a task
+A successful registration returns a user representation and an access token. Keep the token private and do not include it in screenshots, logs, or source control.
 
-```http
-POST /api/tasks
-Authorization: Bearer YOUR_ACCESS_TOKEN
-Content-Type: application/json
-Accept: application/json
-```
+### Log in
 
-```json
-{
-  "title": "Finish API documentation",
-  "description": "Document endpoints and test the examples.",
-  "status": "pending"
-}
-```
+    POST /api/login
+    Content-Type: application/json
+    Accept: application/json
 
-New tasks default to the `pending` status when one is not supplied.
+    {
+      "email": "alex@example.com",
+      "password": "UseYourPasswordHere"
+    }
 
-### List, search, filter, sort, and paginate tasks
+Use the returned token as a bearer token for protected API requests.
 
-The task-list endpoint supports query parameters:
+### Create a task
+
+    POST /api/tasks
+    Authorization: Bearer YOUR_ACCESS_TOKEN
+    Content-Type: application/json
+    Accept: application/json
+
+    {
+      "title": "Finish API documentation",
+      "description": "Document endpoints and test the examples.",
+      "status": "pending"
+    }
+
+New tasks default to pending when no status is supplied.
+
+### List, search, filter, sort, and paginate
+
+The GET /api/tasks endpoint supports query parameters:
 
 | Parameter | Example | Purpose |
 |---|---|---|
-| `search` | `?search=laravel` | Partial, case-insensitive search across title and description |
-| `status` | `?status=in_progress` | Filter by task status |
-| `sort` | `?sort=oldest` | Select a supported sort order |
-| `page` | `?page=2` | Request a page of results |
+| search | ?search=laravel | Partial, case-insensitive search across title and description |
+| status | ?status=in_progress | Filter by task status |
+| sort | ?sort=oldest | Select a supported sort order |
+| page | ?page=2 | Select a results page |
+| per_page | ?per_page=10 | Set the page size within the allowed range |
 
-Parameters can be combined, for example:
+Example with combined parameters:
 
-```http
-GET /api/tasks?search=laravel&status=completed&sort=oldest&page=1
-```
+    GET /api/tasks?search=laravel&status=completed&sort=oldest&page=1&per_page=10
 
-The list response includes pagination metadata such as `current_page`, `per_page`, `total`, and `last_page`. Invalid parameter values return validation errors rather than silently changing the requested query.
+Responses include pagination metadata such as current_page, per_page, total, and last_page. Invalid query options return validation errors.
 
-## Testing
+### Update or delete a task
 
-Run the Pest feature suite inside the app container:
+Use the task ID returned by the API and include your bearer token:
 
-```bash
-docker compose exec app sh -lc 'touch .env && APP_ENV=testing ./vendor/bin/pest'
-```
+    PUT /api/tasks/123
+    Authorization: Bearer YOUR_ACCESS_TOKEN
+    Content-Type: application/json
+    Accept: application/json
 
-The test configuration uses an isolated in-memory SQLite database, so feature tests do not need to write to the development PostgreSQL database.
+    {
+      "title": "Finish the revised API documentation",
+      "description": "Review the examples and verify them against the API."
+    }
+
+Replace 123 with an existing task ID belonging to your account. The API enforces task ownership.
+
+### AI proposals in the browser
+
+AI proposal generation is an authenticated **web** endpoint, not one of the public API endpoints listed above:
+
+    POST /dashboard/ai/task-proposals
+    Content-Type: application/json
+    X-CSRF-TOKEN: YOUR_CSRF_TOKEN
+
+The request body contains a prompt string (3–2000 characters). The endpoint is rate-limited and returns a proposal for review; it does not create a task itself. In the browser, use the dashboard form so the session and CSRF token are handled correctly.
+
+## Run the tests
+
+Run the full Pest suite inside the app container:
+
+    docker compose exec app sh -lc 'touch .env && APP_ENV=testing ./vendor/bin/pest'
+
+The current project test suite was verified with **57 passing tests and 225 assertions**. Results can change as the code and tests evolve; rerun the command to verify your checkout.
 
 Coverage includes:
 
-- Registration and login validation
-- Authentication requirements for protected endpoints
-- Task creation and required fields
-- Task ownership and private data isolation
-- Search, including partial and case-insensitive matches
-- Status filtering and sort validation
-- Pagination and combined query parameters
+- Registration, login, logout, and rate limiting
+- Protected API endpoints and safe user-profile responses
+- Task creation, updates, deletion, and validation
+- Task ownership and isolation between users
+- Search, partial/case-insensitive matching, and description search
+- Status filtering, sorting, pagination, and invalid query parameters
+- Browser registration and task creation
+- AI proposal validation and provider failure handling
+- Missing, null, and empty AI descriptions receiving fallback text
+- Ensuring proposal generation does not save a task before approval
+
+## Security and reliability
+
+- Keep .env, application keys, passwords, and bearer tokens out of Git.
+- Use HTTPS and production-appropriate environment settings when deploying.
+- Do not run with APP_DEBUG=true in production.
+- Keep authenticated routes protected by middleware and enforce task ownership on the server.
+- Treat AI output as untrusted input; validate it before presenting or saving it.
+- Keep AI generation rate limits in place and handle provider failures gracefully.
+- Review database backups, logging, rate limits, and deployment configuration before production use.
+
+This repository is a development project. The passing automated tests and successful local workflow are useful verification, but they do not replace a full security review or production deployment checklist.
 
 ## Project structure
 
-```text
-app/
-  Http/
-    Controllers/
-      Api/          # Authentication and task endpoints
-    Resources/      # Consistent API resource responses
-  Models/           # User and Task models
-routes/
-  api.php           # API route definitions
-  web.php           # Browser-facing routes
-tests/
-  Feature/          # API and application behavior tests
-```
-
-## Security notes
-
-- Keep access tokens and environment secrets out of source control.
-- Use HTTPS in production.
-- Keep authentication and task endpoints protected by the appropriate middleware.
-- Validate request data and return safe user representations rather than exposing password fields.
-- Review rate limits and operational settings before deploying to production.
+    app/
+      Http/
+        Controllers/
+          Api/                 # API endpoints
+          Web/                 # Browser-facing controllers
+        Requests/               # Request validation, where applicable
+        Resources/              # API resource responses
+      Models/                   # User and Task models
+      Policies/                 # Task authorization
+      Services/
+        AiTaskProposalService.php
+    routes/
+      api.php                   # JSON API routes
+      web.php                   # Dashboard, auth, and AI proposal routes
+    resources/
+      js/                       # Dashboard interactions
+      views/                    # Blade templates
+    tests/
+      Feature/                  # API, web, authorization, and AI behavior tests
+    compose.yaml                # App and PostgreSQL services
+    Dockerfile                  # Container image build
 
 ## Roadmap
 
-Potential next steps as the project evolves:
+Possible future improvements:
 
-- Expand API documentation with a machine-readable OpenAPI specification.
-- Add more edge-case and authorization tests.
-- Improve deployment and CI automation.
-- Continue refining the browser dashboard alongside the API.
+- Publish a machine-readable OpenAPI specification.
+- Add a GitHub Actions workflow to run tests on pushes and pull requests.
+- Add real screenshots or a short demo GIF of the dashboard and AI approval flow.
+- Expand deployment documentation and operational health checks.
+- Continue expanding authorization and AI error-path tests.
 
 ## About the developer
 
