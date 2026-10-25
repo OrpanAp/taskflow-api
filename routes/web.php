@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\TaskController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])
@@ -14,6 +15,12 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::view('/', 'dashboard')->name('dashboard');
+    Route::get('/dashboard/tasks', [TaskController::class, 'index'])
+        ->name('dashboard.tasks.index');
+    Route::post('/dashboard/tasks', [TaskController::class, 'store'])
+        ->name('dashboard.tasks.store');
+    Route::get('/dashboard/tasks/stats', [TaskController::class, 'stats'])
+        ->name('dashboard.tasks.stats');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');

@@ -124,7 +124,7 @@
                             <span class="text-sm font-medium text-slate-500">All tasks</span>
                             <span class="rounded-xl bg-indigo-50 px-3 py-2 text-indigo-600">▦</span>
                         </div>
-                        <p class="mt-5 text-3xl font-bold">—</p>
+                        <p id="statAll" class="mt-5 text-3xl font-bold">—</p>
                         <p class="mt-2 text-xs text-slate-500">Your total tasks</p>
                     </article>
 
@@ -133,7 +133,7 @@
                             <span class="text-sm font-medium text-slate-500">Pending</span>
                             <span class="rounded-xl bg-amber-50 px-3 py-2 text-amber-600">◷</span>
                         </div>
-                        <p class="mt-5 text-3xl font-bold">—</p>
+                        <p id="statPending" class="mt-5 text-3xl font-bold">—</p>
                         <p class="mt-2 text-xs text-slate-500">Waiting to get started</p>
                     </article>
 
@@ -142,7 +142,7 @@
                             <span class="text-sm font-medium text-slate-500">In progress</span>
                             <span class="rounded-xl bg-sky-50 px-3 py-2 text-sky-600">↗</span>
                         </div>
-                        <p class="mt-5 text-3xl font-bold">—</p>
+                        <p id="statInProgress" class="mt-5 text-3xl font-bold">—</p>
                         <p class="mt-2 text-xs text-slate-500">Currently underway</p>
                     </article>
 
@@ -151,7 +151,7 @@
                             <span class="text-sm font-medium text-slate-500">Completed</span>
                             <span class="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-600">✓</span>
                         </div>
-                        <p class="mt-5 text-3xl font-bold">—</p>
+                        <p id="statCompleted" class="mt-5 text-3xl font-bold">—</p>
                         <p class="mt-2 text-xs text-slate-500">Tasks you've finished</p>
                     </article>
                 </section>
@@ -161,14 +161,65 @@
                         class="flex flex-col justify-between gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:p-6">
                         <div>
                             <h3 class="text-lg font-bold">Your tasks</h3>
-                            <p class="mt-1 text-sm text-slate-500">Your tasks will appear here once you sign in.</p>
+                            <p class="mt-1 text-sm text-slate-500">Manage your tasks, track progress, and stay
+                                organized.</p>
                         </div>
-                        <button type="button" disabled
-                            class="cursor-not-allowed rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white opacity-60">
+                        <button id="newTaskButton" type="button" aria-controls="taskFormPanel" aria-expanded="false"
+                            class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100">
                             + New task
                         </button>
                     </div>
+                    <div id="taskFormPanel" class="hidden border-b border-slate-100 bg-slate-50/70 p-5 sm:p-6">
+                        <form id="taskForm" class="space-y-4">
+                            @csrf
 
+                            <div>
+                                <label for="taskTitle" class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Task title <span class="text-red-500">*</span>
+                                </label>
+                                <input id="taskTitle" name="title" type="text" maxlength="200" required
+                                    placeholder="What do you need to accomplish?"
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50">
+                            </div>
+
+                            <div>
+                                <label for="taskDescription" class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Description <span class="font-normal text-slate-400">(optional)</span>
+                                </label>
+                                <textarea id="taskDescription" name="description" rows="3" maxlength="10000"
+                                    placeholder="Add details about this task..."
+                                    class="w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"></textarea>
+                            </div>
+
+                            <div>
+                                <label for="taskStatus" class="mb-2 block text-sm font-semibold text-slate-700">
+                                    Initial status
+                                </label>
+                                <select id="taskStatus" name="status"
+                                    class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-400 sm:max-w-xs">
+                                    <option value="pending">Pending</option>
+                                    <option value="in_progress">In progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+
+                            <div id="taskFormError" role="alert"
+                                class="hidden rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button id="saveTaskButton" type="submit"
+                                    class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100">
+                                    Create task
+                                </button>
+
+                                <button id="cancelTaskButton" type="button"
+                                    class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:p-6">
                         <div class="relative flex-1">
                             <label for="taskSearch" class="sr-only">Search tasks</label>
@@ -185,20 +236,33 @@
                         </select>
                     </div>
 
-                    <div class="border-t border-slate-100 px-5 py-12 text-center sm:px-6">
-                        <div
-                            class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-2xl text-indigo-600">
-                            ☷
+
+                    <div id="taskList" aria-live="polite" class="border-t border-slate-100 px-5 py-8 sm:px-6">
+                        <div id="taskLoading" class="py-8 text-center text-sm text-slate-500">
+                            Loading your tasks...
                         </div>
-                        <h4 class="mt-4 font-semibold">Your tasks, all in one place</h4>
-                        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                            Sign in to load your personal tasks and manage your work from this dashboard.
-                        </p>
-                        <a href="{{ route('login') }}"
-                            class="mt-5 inline-flex rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                            Sign in to continue
-                        </a>
+
+                        <div id="taskEmpty" class="hidden py-8 text-center">
+                            <div
+                                class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-2xl text-indigo-600">
+                                ☷
+                            </div>
+                            <h4 class="mt-4 font-semibold">No tasks found</h4>
+                            <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                                Your tasks will appear here. Try changing your filters or create a task when that
+                                feature is available.
+                            </p>
+                        </div>
+
+                        <div id="taskError" role="alert"
+                            class="hidden rounded-xl bg-red-50 p-4 text-sm text-red-700">
+                            Unable to load your tasks. Please refresh the page and try again.
+                        </div>
+
+                        <div id="taskItems" class="hidden divide-y divide-slate-100">
+                        </div>
                     </div>
+
                 </section>
 
                 <footer class="pb-2 text-center text-xs text-slate-400">
