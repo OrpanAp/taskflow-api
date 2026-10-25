@@ -21,10 +21,16 @@ test('a visitor can register an account', function () {
         ->assertJsonPath('user.email', 'alex@example.com')
         ->assertJsonStructure([
             'message',
-            'user' => ['id', 'name', 'email'],
+            'user' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+            ],
             'token',
         ])
-        ->assertJsonMissingPath('user.password');
+        ->assertJsonMissingPath('user.password')
+        ->assertJsonMissingPath('user.remember_token');
 
     $this->assertDatabaseHas('users', [
         'email' => 'alex@example.com',
@@ -79,10 +85,16 @@ test('a registered user can log in', function () {
         ->assertJsonPath('user.email', 'alex@example.com')
         ->assertJsonStructure([
             'message',
-            'user' => ['id', 'name', 'email'],
+            'user' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+            ],
             'token',
         ])
-        ->assertJsonMissingPath('user.password');
+        ->assertJsonMissingPath('user.password')
+        ->assertJsonMissingPath('user.remember_token');
 
     $this->assertDatabaseCount('personal_access_tokens', 1);
 });
@@ -118,6 +130,30 @@ test('login rejects an email address that does not exist', function () {
         );
 
     $this->assertDatabaseCount('personal_access_tokens', 0);
+});
+
+test('an authenticated user can retrieve their safe user profile', function () {
+    $user = User::factory()->create([
+        'name' => 'Alex Developer',
+        'email' => 'alex@example.com',
+    ]);
+
+    $token = $user->createToken('test-token')->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/user')
+        ->assertOk()
+        ->assertJsonPath('id', $user->id)
+        ->assertJsonPath('name', 'Alex Developer')
+        ->assertJsonPath('email', 'alex@example.com')
+        ->assertJsonStructure([
+            'id',
+            'name',
+            'email',
+            'created_at',
+        ])
+        ->assertJsonMissingPath('password')
+        ->assertJsonMissingPath('remember_token');
 });
 
 test('a user can log out and revoke their current token', function () {
