@@ -602,7 +602,9 @@ if (taskList) {
                 } else {
                     showTaskFormError(
                         result.message ||
-                            "Unable to create the task. Please try again.",
+                            (isEditing
+                                ? "Unable to update the task. Please try again."
+                                : "Unable to create the task. Please try again."),
                     );
                 }
 
