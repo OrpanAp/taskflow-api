@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Task;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class TaskController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        Gate::authorize('viewAny', Task::class);
+
         $validated = $request->validate([
             'status' => [
                 'sometimes',
@@ -76,6 +79,8 @@ class TaskController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        Gate::authorize('create', Task::class);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string'],
@@ -104,6 +109,8 @@ class TaskController extends Controller
             ->tasks()
             ->findOrFail($task);
 
+        Gate::authorize('update', $task);
+
         $task->update($validated);
 
         return response()->json([
@@ -116,6 +123,8 @@ class TaskController extends Controller
         $task = $request->user()
             ->tasks()
             ->findOrFail($task);
+
+        Gate::authorize('delete', $task);
 
         $task->delete();
 
