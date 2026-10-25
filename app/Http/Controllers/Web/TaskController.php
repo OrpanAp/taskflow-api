@@ -48,7 +48,12 @@ class TaskController extends Controller
         }
 
         if (isset($validated['search'])) {
-            $query->where('title', 'like', '%' . $validated['search'] . '%');
+            $search = '%' . $validated['search'] . '%';
+
+            $query->where(function ($query) use ($search) {
+                $query->whereLike('title', $search)
+                    ->orWhereLike('description', $search);
+            });
         }
 
         $sort = $validated['sort'] ?? 'latest';

@@ -425,3 +425,39 @@ test('users cannot delete another users tasks', function () {
         'user_id' => $owner->id,
     ]);
 });
+
+test('task search is case insensitive and supports partial matches', function () {
+    $user = User::factory()->create();
+
+    $user->tasks()->create([
+        'title' => 'Prepare Laravel Documentation',
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $this->getJson('/api/tasks?search=laravel')
+        ->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('data.0.title', 'Prepare Laravel Documentation');
+
+    $this->getJson('/api/tasks?search=DOCUM')
+        ->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('data.0.title', 'Prepare Laravel Documentation');
+});
+
+test('task search also matches descriptions', function () {
+    $user = User::factory()->create();
+
+    $user->tasks()->create([
+        'title' => 'Prepare project',
+        'description' => 'Review the AUTHENTICATION workflow',
+    ]);
+
+    Sanctum::actingAs($user);
+
+    $this->getJson('/api/tasks?search=authentication')
+        ->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('data.0.title', 'Prepare project');
+});
