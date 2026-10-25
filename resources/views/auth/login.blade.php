@@ -77,6 +77,13 @@
                 class="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200">
                 Sign in
             </button>
+
+            <p class="mt-6 text-center text-sm text-slate-500">
+                Don't have an account?
+                <a href="{{ route('register') }}" class="font-semibold text-indigo-600 hover:text-indigo-700">
+                    Create one
+                </a>
+            </p>
         </form>
 
         <p class="mt-8 text-center text-xs text-slate-400">

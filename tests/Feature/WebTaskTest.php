@@ -87,3 +87,60 @@ test('task creation uses the authenticated user as owner', function () {
         'user_id' => $anotherUser->id,
     ]);
 });
+
+
+
+test('a visitor can view the registration form', function () {
+    $this->get(route('register'))
+        ->assertOk()
+        ->assertSee('Create your account')
+        ->assertSee('password_confirmation');
+});
+
+test('a visitor can register and is signed in', function () {
+    $response = $this->post(route('register.store'), [
+        'name' => 'Alex Developer',
+        'email' => 'alex@example.com',
+        'password' => 'SecurePass123!',
+        'password_confirmation' => 'SecurePass123!',
+    ]);
+
+    $response->assertRedirect(route('dashboard'));
+
+    $this->assertAuthenticated();
+
+    $this->assertDatabaseHas('users', [
+        'name' => 'Alex Developer',
+        'email' => 'alex@example.com',
+    ]);
+});
+
+test('registration rejects duplicate email addresses', function () {
+    User::factory()->create([
+        'email' => 'alex@example.com',
+    ]);
+
+    $this->from(route('register'))
+        ->post(route('register.store'), [
+            'name' => 'Another Alex',
+            'email' => 'alex@example.com',
+            'password' => 'SecurePass123!',
+            'password_confirmation' => 'SecurePass123!',
+        ])
+        ->assertSessionHasErrors('email');
+});
+
+test('registration requires matching passwords', function () {
+    $this->from(route('register'))
+        ->post(route('register.store'), [
+            'name' => 'Alex Developer',
+            'email' => 'alex@example.com',
+            'password' => 'SecurePass123!',
+            'password_confirmation' => 'DifferentPass123!',
+        ])
+        ->assertSessionHasErrors('password');
+
+    $this->assertDatabaseMissing('users', [
+        'email' => 'alex@example.com',
+    ]);
+});
