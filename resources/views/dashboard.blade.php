@@ -36,18 +36,9 @@
                     class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
                     <span>☷</span> My Tasks
                 </a>
-                <a href="#progress"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
-                    <span>◷</span> Progress
-                </a>
-
                 <p class="mb-3 mt-9 px-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
                     Preferences
                 </p>
-                <a href="#settings"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100">
-                    <span>⚙</span> Settings
-                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
@@ -64,10 +55,11 @@
                 <p class="mt-2 text-xs leading-5 text-slate-300">
                     Organize your work, focus on priorities, and keep moving forward.
                 </p>
-                <div class="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-700">
-                    <div class="h-full w-2/3 rounded-full bg-indigo-400"></div>
+                <div class="mt-4 border-t border-slate-700 pt-4">
+                    <p class="text-xs leading-5 text-slate-300">
+                        Every completed task is progress. Keep moving forward, one step at a time.
+                    </p>
                 </div>
-                <p class="mt-2 text-xs text-slate-400">Your next step starts here.</p>
             </div>
         </aside>
 
@@ -89,12 +81,15 @@
 
                 <div class="flex items-center gap-3">
                     <div class="hidden text-right sm:block">
-                        <p class="text-sm font-semibold">Welcome to TaskFlow</p>
+                        <p class="text-sm font-semibold">
+                            Welcome, {{ auth()->user()->name }}
+                        </p>
                         <p class="text-xs text-slate-500">Your productivity workspace</p>
                     </div>
+
                     <div
                         class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700">
-                        T
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
                 </div>
             </header>
@@ -249,8 +244,8 @@
                             </div>
                             <h4 class="mt-4 font-semibold">No tasks found</h4>
                             <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                                Your tasks will appear here. Try changing your filters or create a task when that
-                                feature is available.
+                                No tasks match your current filters. Try a different search or status,
+                                or create a new task to get started.
                             </p>
                         </div>
 
