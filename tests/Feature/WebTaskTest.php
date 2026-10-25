@@ -88,6 +88,79 @@ test('task creation uses the authenticated user as owner', function () {
     ]);
 });
 
+test('authenticated users can update their own task', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->for($user)->create([
+        'title' => 'Original title',
+        'description' => 'Original description',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->actingAs($user)->putJson(
+        route('dashboard.tasks.update', $task),
+        [
+            'title' => 'Updated title',
+            'description' => 'Updated description',
+            'status' => 'in_progress',
+        ]
+    );
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'Task updated successfully.')
+        ->assertJsonPath('data.title', 'Updated title')
+        ->assertJsonPath('data.status', 'in_progress');
+
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'user_id' => $user->id,
+        'title' => 'Updated title',
+        'status' => 'in_progress',
+    ]);
+});
+
+test('users cannot update another users task', function () {
+    $user = User::factory()->create();
+    $owner = User::factory()->create();
+    $task = Task::factory()->for($owner)->create(['title' => 'Private task']);
+
+    $this->actingAs($user)
+        ->putJson(route('dashboard.tasks.update', $task), ['title' => 'Hijacked'])
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'title' => 'Private task',
+        'user_id' => $owner->id,
+    ]);
+});
+
+test('authenticated users can delete their own task', function () {
+    $user = User::factory()->create();
+    $task = Task::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->deleteJson(route('dashboard.tasks.destroy', $task))
+        ->assertOk()
+        ->assertJsonPath('message', 'Task deleted successfully.');
+
+    $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+});
+
+test('users cannot delete another users task', function () {
+    $user = User::factory()->create();
+    $owner = User::factory()->create();
+    $task = Task::factory()->for($owner)->create();
+
+    $this->actingAs($user)
+        ->deleteJson(route('dashboard.tasks.destroy', $task))
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'user_id' => $owner->id,
+    ]);
+});
+
 test('a visitor can view the registration form', function () {
     $this->get(route('register'))
         ->assertOk()
