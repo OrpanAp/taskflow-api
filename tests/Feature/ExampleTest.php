@@ -1,7 +1,7 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
+test('the API health endpoint is available', function () {
+    $response = $this->getJson('/api/health');
 
-    $response->assertStatus(200);
+    $response->assertOk();
 });
