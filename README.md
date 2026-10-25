@@ -82,18 +82,20 @@ The AI integration uses an Ollama model running locally on the host machine by d
 
 ## Architecture
 
-    flowchart TD
-        U[User] --> W[Laravel browser dashboard]
-        U --> C[Client / API consumer]
-        W --> L[Laravel application]
-        C --> A[Laravel JSON API]
-        L --> DB[(PostgreSQL 17)]
-        A --> DB
-        L --> AI[AI task proposal service]
-        AI --> O[Ollama on host]
-        O --> AI
-        AI --> L
-        L --> W
+```mermaid
+flowchart TD
+    U[User] --> W[Laravel browser dashboard]
+    U --> C[Client / API consumer]
+    W --> L[Laravel application]
+    C --> A[Laravel JSON API]
+    L --> DB[(PostgreSQL 17)]
+    A --> DB
+    L --> AI[AI task proposal service]
+    AI --> O[Ollama on host]
+    O --> AI
+    AI --> L
+    L --> W
+```
 
 - **Laravel** handles routing, authentication, validation, task logic, and HTTP responses.
 - **PostgreSQL** persists application data in the Docker Compose environment.
@@ -136,7 +138,7 @@ On PowerShell, use:
 
     Copy-Item .env.example .env
 
-The Compose configuration supplies the PostgreSQL connection settings and Ollama defaults to the app container. Keep your local .env file private; never commit real credentials or application secrets.
+The Compose configuration supplies the PostgreSQL connection settings and Ollama defaults to the app container. Keep your local `.env` file private; never commit real credentials or application secrets. The credentials currently defined in `compose.yaml` are for local development only and must not be reused in a public deployment.
 
 ### 3. Build and start the services
 
@@ -345,7 +347,7 @@ Run the full Pest suite inside the app container:
 
     docker compose exec app sh -lc 'touch .env && APP_ENV=testing ./vendor/bin/pest'
 
-The current project test suite was verified with **57 passing tests and 225 assertions**. Results can change as the code and tests evolve; rerun the command to verify your checkout.
+The project test suite was last verified in this development environment with **61 passing tests and 237 assertions**. This count can change as tests evolve; rerun the command above to see the result for your checkout.
 
 Coverage includes:
 
@@ -362,9 +364,9 @@ Coverage includes:
 
 ## Security and reliability
 
-- Keep .env, application keys, passwords, and bearer tokens out of Git.
+- Keep `.env`, application keys, passwords, and bearer tokens out of Git.
 - Use HTTPS and production-appropriate environment settings when deploying.
-- Do not run with APP_DEBUG=true in production.
+- Do not run with `APP_DEBUG=true` in production. The supplied `compose.yaml` is a local-development configuration: it sets `APP_ENV=local`, enables debug mode, and uses a development database password. Do not expose this configuration directly to the public internet. Use production-specific environment settings and strong secrets before deployment.
 - Keep authenticated routes protected by middleware and enforce task ownership on the server.
 - Treat AI output as untrusted input; validate it before presenting or saving it.
 - Keep AI generation rate limits in place and handle provider failures gracefully.
