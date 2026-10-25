@@ -117,4 +117,41 @@ class TaskController extends Controller
             'data' => (new TaskResource($task))->resolve($request),
         ], 201);
     }
+
+    public function update(Request $request, int $task): JsonResponse
+    {
+        $task = $request->user()->tasks()->findOrFail($task);
+
+        Gate::authorize('update', $task);
+
+        $validated = $request->validate([
+            'title' => ['sometimes', 'required', 'string', 'max:200'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
+            'status' => [
+                'sometimes',
+                'required',
+                'in:pending,in_progress,completed',
+            ],
+        ]);
+
+        $task->update($validated);
+
+        return response()->json([
+            'message' => 'Task updated successfully.',
+            'data' => (new TaskResource($task->fresh()))->resolve($request),
+        ]);
+    }
+
+    public function destroy(Request $request, int $task): JsonResponse
+    {
+        $task = $request->user()->tasks()->findOrFail($task);
+
+        Gate::authorize('delete', $task);
+
+        $task->delete();
+
+        return response()->json([
+            'message' => 'Task deleted successfully.',
+        ]);
+    }
 }
