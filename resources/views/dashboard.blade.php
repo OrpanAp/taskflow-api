@@ -242,6 +242,7 @@
                         </button>
                     </div>
                     <div id="taskFormPanel" class="hidden border-b border-slate-100 bg-slate-50/70 p-5 sm:p-6">
+                        <h4 id="taskFormHeading" class="mb-4 font-semibold text-slate-900">Create a task</h4>
                         <form id="taskForm" class="space-y-4">
                             @csrf
 
@@ -291,6 +292,9 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                    <div id="taskNotice" role="status" aria-live="polite"
+                        class="mx-5 mt-4 hidden rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700 sm:mx-6">
                     </div>
                     <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:p-6">
                         <div class="relative flex-1">
